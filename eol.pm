@@ -2,7 +2,12 @@ package PerlIO::eol;
 
 use 5.007003;
 use XSLoader;
-our $VERSION = '0.02';
+use Exporter;
+
+our $VERSION = '0.03';
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(eol_is_mixed);  # symbols to export on request
+
 XSLoader::load __PACKAGE__, $VERSION;
 
 1;
@@ -20,14 +25,27 @@ October 7, 2004.
 
     binmode STDIN, ":raw:eol(LF)";
     binmode STDOUT, ":raw:eol(CRLF)";
+    open FH, "+<:raw:eol(LF-Native)", "file";
+
+    use PerlIO::eol qw( eol_is_mixed );
+    my $pos = eol_is_mixed( "mixed\nstring\r" );
 
 =head1 DESCRIPTION
 
-This layer normalizes any of C<CR>, C<LF> and C<CRLF> into the designated
-line ending.  It works for both input and output handles.
+This layer normalizes any of C<CR>, C<LF>, C<CRLF> and C<Native> into the
+designated line ending.  It works for both input and output handles.
+
+If you specify two different line endings joined by a C<->, it will use the
+first one for reading and the second one for writing.  For example, the
+C<LF-CRLF> encoding means that all input should be normalized to C<LF>, and
+all output should be normalized to C<CRLF>.
 
 It is advised to pop any potential C<:crlf> or encoding layers before this
 layer; this is usually done using a C<:raw> prefix.
+
+This module also optionally exports a C<eol_is_mixed> function; it takes a
+string and returns the position of the first inconsistent line ending found
+in that string, or C<0> if the line endings are consistent.
 
 =head1 AUTHORS
 

@@ -1,3 +1,12 @@
+[Changes for 0.03 - 2004-10-08]
+
+* Fix building problems on Win32.
+* Support the "Native" eol style.
+* Added I/O-specific syntax like "LF-Native", which means reading with LF
+  and writing to Native; this what "svn:eol-style = native" means.
+* Optionally exports a "eol_is_mixed" function, to determine whether a string
+  has an inconsistent line ending style.
+
 [Changes for 0.02 - 2004-10-07]
 
 * Fixed the buffer offset problem on non-CRLF settings.

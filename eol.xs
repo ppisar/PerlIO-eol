@@ -4,20 +4,33 @@
 #include "perlio.h"
 #include "perliol.h"
 
-static void noop(const char *s, ...) { return; }
-
 typedef struct {
-        PerlIOBuf base;
-        bool      read_cr,   write_cr;
-        STDCHAR   *read_eol, *write_eol;
+    PerlIOBuf base;
+    bool      read_cr,   write_cr;
+    STDCHAR   *read_eol, *write_eol;
 } PerlIOEOL;
+
+#define PerlIOEOL_CR     "\015"
+#define PerlIOEOL_LF     "\012"
+#define PerlIOEOL_CRLF   "\015\012"
+
+#ifdef PERLIO_USING_CRLF
+#  define PerlIOEOL_NATIVE PerlIOEOL_CRLF
+#else
+#  ifdef MACOS_TRADITIONAL
+#    define PerlIOEOL_NATIVE PerlIOEOL_CR
+#  else
+#    define PerlIOEOL_NATIVE PerlIOEOL_LF
+#  endif
+#endif
 
 IV
 PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
 {
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
-    char *eol = SvPV_nolen(arg);
-
+    register U8 *p, *eol_w = NULL, *eol_r = NULL;
+    STRLEN len;
+    
     if (PerlIOBase(PerlIONext(f))->flags & PERLIO_F_UTF8) {
         PerlIOBase(f)->flags |= PERLIO_F_UTF8;
     }
@@ -27,17 +40,42 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
 
     s->read_cr = s->write_cr = 0;
 
-    if ( strEQ( eol, "CRLF" ) || strEQ( eol, "crlf" ) ) {
-        s->write_eol = s->read_eol = "\015\012";
-    }
-    else if ( strEQ( eol, "CR" ) || strEQ( eol, "cr" ) ) {
-        s->write_eol = s->read_eol = "\015";
-    }
-    else if ( strEQ( eol, "LF" ) || strEQ( eol, "lf" ) ) {
-        s->write_eol = s->read_eol = "\012";
+    p = (U8*)SvPV(arg, len);
+    if (len) {
+        register U8 *end = p + len;
+        Newz('e', eol_r, len + 1, U8);
+        Copy(p, eol_r, len, U8);
+
+        p = eol_r; end = p + len;
+        for (; p < end; p++) {
+            *p = toLOWER(*p);
+            if ((*p == '-') && (eol_w == NULL)) {
+                *p = '\0';
+                eol_w = p+1;
+            }
+        }
     }
     else {
-        Perl_die(aTHX_ "Must pass CRLF, CR or LF to :eol().");
+        Perl_die(aTHX_ "Must pass CRLF, CR, LF or Native to :eol().");
+    }
+
+    /* split off eol using strchr */
+    if (eol_w == NULL) { eol_w = eol_r; }
+
+    if ( strEQ( eol_r, "cr" ) )           { s->read_eol = PerlIOEOL_CR; }
+    else if ( strEQ( eol_r, "lf" ) )      { s->read_eol = PerlIOEOL_LF; }
+    else if ( strEQ( eol_r, "crlf" ) )    { s->read_eol = PerlIOEOL_CRLF; }
+    else if ( strEQ( eol_r, "native" ) )  { s->read_eol = PerlIOEOL_NATIVE; }
+    else {
+        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_r);
+    }
+
+    if ( strEQ( eol_w, "cr" ) )           { s->write_eol = PerlIOEOL_CR; }
+    else if ( strEQ( eol_w, "lf" ) )      { s->write_eol = PerlIOEOL_LF; }
+    else if ( strEQ( eol_w, "crlf" ) )    { s->write_eol = PerlIOEOL_CRLF; }
+    else if ( strEQ( eol_w, "native" ) )  { s->write_eol = PerlIOEOL_NATIVE; }
+    else {
+        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_r);
     }
 
     return PerlIOBuf_pushed(aTHX_ f, mode, arg, tab);
@@ -63,8 +101,10 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
 {
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
     PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
-    const STDCHAR *i, *start = vbuf, *end = vbuf + count;
-    bool is_crlf = (strEQ( s->read_eol, "\015\012" ));
+    const STDCHAR *i, *start = vbuf, *end = vbuf;
+    bool is_crlf = (strEQ( s->write_eol, PerlIOEOL_CRLF ));
+
+    end += (unsigned int)count;
 
     if (s->write_cr && *start == 012) {
         start++;
@@ -82,7 +122,7 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
             }
 
             if (is_crlf) {
-                if (PerlIOBuf_write(aTHX_ f, "\015\012", 2) < 2) {
+                if (PerlIOBuf_write(aTHX_ f, PerlIOEOL_CRLF, 2) < 2) {
                     return i - (STDCHAR*)vbuf;
                 }
             }
@@ -122,7 +162,7 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
     PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
     const STDCHAR *i, *start = b->ptr, *end = b->end;
-    bool is_crlf = (strEQ( s->read_eol, "\015\012" ));
+    bool is_crlf = (strEQ( s->read_eol, PerlIOEOL_CRLF ));
     STDCHAR *buf = NULL, *ptr = NULL;
 
     if (code == -1) {
@@ -218,3 +258,37 @@ BOOT:
   #ifdef PERLIO_LAYERS
         PerlIO_define_layer(aTHX_ &PerlIO_eol);
   #endif
+
+#define PerlIOEOL_Seen(sym) \
+    if (seen && (seen != sym)) { \
+        RETVAL = (p + len - end); \
+        break; \
+    } \
+    seen = sym;
+
+unsigned int
+eol_is_mixed(arg)
+        SV  *arg
+    CODE:
+        STRLEN len;
+        register U8 *p, *end;
+        register unsigned int seen = 0;
+        p = (U8*)SvPV(arg, len);
+        end = p + len;
+        RETVAL = 0;
+        for (; p < end; p++) {
+            if (*p == 012) {
+                PerlIOEOL_Seen(*p); /* LF */
+            }
+            else if (*p == 015) {
+                if ((p == end - 1) || p[1] != 012 ) {
+                    PerlIOEOL_Seen(*p); /* CR */
+                }
+                else {
+                    PerlIOEOL_Seen(015 + 012); /* CRLF */
+                    p++;
+                }
+            }
+        }
+    OUTPUT:
+        RETVAL

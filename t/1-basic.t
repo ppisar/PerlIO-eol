@@ -1,8 +1,14 @@
-use Test::More tests => 8;
-
-$/ = undef;
+use Test::More tests => 15;
 
 my ($CR, $LF) = ("\015", "\012");
+
+use_ok('PerlIO::eol', qw( eol_is_mixed ));
+is( eol_is_mixed("."), 0 );
+is( eol_is_mixed(".$CR$LF."), 0 );
+is( eol_is_mixed(".$CR.$LF."), 3 );
+is( eol_is_mixed(".$CR$LF.$CR"), 4 );
+
+$/ = undef;
 
 {
     open my $w, ">:raw", "read" or die "can't create testfile: $!";
@@ -25,7 +31,7 @@ my ($CR, $LF) = ("\015", "\012");
 }
 
 {
-    ok(open(my $w, ">:raw:eol(LF)", "write"), "open for write");
+    ok(open(my $w, ">:raw:eol(CrLf-lf)", "write"), "open for write");
     print $w "$CR";
 }
 
@@ -34,5 +40,17 @@ my ($CR, $LF) = ("\015", "\012");
     is(<$r>, "$LF", "write");
 }
 
-unlink "read";
-unlink "write";
+{
+    ok(open(my $w, ">:raw:eol(LF-Native)", "write"), "open for write");
+    print $w "$CR";
+}
+
+{
+    open my $r, "<", "write" or die "can't read testfile: $!";
+    is(<$r>, "\n", "write");
+}
+
+END {
+    unlink "read";
+    unlink "write";
+}
