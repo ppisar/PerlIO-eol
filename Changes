@@ -1,3 +1,9 @@
+[Changes for 0.06 - 2004-10-15]
+
+* Macroize the inner fill() loop into fill.h, which saves many cycles.
+* In particular, 'LF' and 'Native' on LF platforms should now only have
+  minimum overhead over ':raw' if the processed stream does not contain CRs.
+
 [Changes for 0.05 - 2004-10-09]
 
 * PerlIO_read() calls were returning unneeded errors when the

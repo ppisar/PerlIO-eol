@@ -3,6 +3,7 @@
 #include "XSUB.h"
 #include "perlio.h"
 #include "perliol.h"
+#include "fill.h"
 
 typedef struct {
     PerlIOBuf base;
@@ -162,7 +163,6 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
     PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
     const STDCHAR *i, *start = b->ptr, *end = b->end;
-    bool is_crlf = (strEQ( s->read_eol, PerlIOEOL_CRLF ));
     STDCHAR *buf = NULL, *ptr = NULL;
 
     if (code != 0) {
@@ -176,35 +176,14 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     }
     s->read_cr = 0;
 
-    for (i = start; i < end; i++) {
-        if (*i == 015 || *i == 012) {
-            if (buf == NULL) {
-                New('b', buf, (i - start) + ((end - i + 1) * 2), STDCHAR);
-                ptr = buf;
-            }
-
-            Copy(start, ptr, i - start, STDCHAR);
-            ptr += i - start;
-
-            if (is_crlf) {
-                *ptr++ = 015;
-                *ptr++ = 012;
-            }
-            else {
-                *ptr++ = *(s->read_eol);
-            }
-
-            if (*i == 015) {
-                if (i == end - 1) {
-                    s->read_cr = 1;
-                }
-                else if (i[1] == 012) {
-                    i++;
-                }
-            }
-
-            start = i + 1;
-        }
+    if (strEQ( s->read_eol, PerlIOEOL_LF )) {
+        FillWithLF;
+    }
+    else if (strEQ( s->read_eol, PerlIOEOL_CRLF )) {
+        FillWithCRLF;
+    }
+    else if (strEQ( s->read_eol, PerlIOEOL_CR )) {
+        FillWithCR;
     }
 
     if (buf != NULL) {
@@ -286,8 +265,6 @@ PerlIO_funcs PerlIO_eol = {
 };
 
 MODULE = PerlIO::eol            PACKAGE = PerlIO::eol
-
-PROTOTYPES: DISABLE
 
 BOOT:  
   #ifdef PERLIO_LAYERS
