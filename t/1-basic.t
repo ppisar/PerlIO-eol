@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 22;
+use Test::More tests => 23;
 
 BEGIN { use_ok('PerlIO::eol', qw( eol_is_mixed CR LF CRLF NATIVE )) }
 
@@ -58,9 +58,17 @@ sub is_hex ($$;$) {
 
 {
     local $@;
-    open my $w, ">:raw:eol(LF!)", "read" or die "can't create testfile: $!";
+    open my $w, ">:raw:eol(LF!)", "write" or die "can't create testfile: $!";
     eval { print $w "...$CRLF$LF$CR..." };
-    like($@, qr/Mixed newlines found in "read"/, 'raises exception');
+    like($@, qr/Mixed newlines found in "write"/, 'raises exception');
+}
+
+TODO: {
+    local $@;
+    local $TODO = 'Trailing CR in mixed encodings';
+    open my $w, ">:raw:eol(LF!)", "write" or die "can't create testfile: $!";
+    eval { print $w "...$CRLF$CR" };
+    like($@, qr/Mixed newlines found in "write"/, 'raises exception');
 }
 
 {

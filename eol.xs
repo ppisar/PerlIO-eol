@@ -210,7 +210,7 @@ eol_is_mixed(arg)
         end = i + len;
         RETVAL = 0;
         for (; i < end; i++) {
-            EOL_CheckForMixedCRLF( seen, EOL_Break, ( i++ ), break );
+            EOL_CheckForMixedCRLF( seen, EOL_Break, EOL_Seen( seen, EOL_CR, EOL_Break ), break, ( i++ ) );
         }
     OUTPUT:
         RETVAL

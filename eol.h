@@ -41,14 +41,17 @@ enum {
 
 #define EOL_LoopForMixed( baton, do_break, do_lf ) \
     EOL_LoopBegin; \
-    EOL_CheckForMixedCRLF( baton.seen, do_break, NOOP, do_lf );
+    EOL_CheckForMixedCRLF( baton.seen, do_break, NOOP, do_lf, NOOP );
 
-#define EOL_CheckForMixedCRLF( seen, do_break, do_crlf, do_lf ) \
+#define EOL_CheckForMixedCRLF( seen, do_break, do_cr, do_lf, do_crlf ) \
     switch (*i) { \
         case EOL_LF: \
             EOL_Seen( seen, EOL_LF, do_break ); do_lf; \
         case EOL_CR: \
-            if ((i == end - 1) || i[1] != EOL_LF ) { \
+	    if (i == end - 1) { \
+                do_cr; \
+	    } \
+	    else if ( i[1] != EOL_LF ) { \
                 EOL_Seen( seen, EOL_CR, do_break ); \
             } \
             else { \
@@ -99,7 +102,7 @@ enum {
     }
 
 #define EOL_StartUpdate(baton) \
-    if (baton.cr && *start == EOL_CR) { start++; } \
+    if (baton.cr && *start == EOL_LF) { start++; } \
     baton.cr = 0;
 
 #define EOL_Break \

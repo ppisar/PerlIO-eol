@@ -1,5 +1,5 @@
 name: PerlIO-eol
-version: 0.12
+version: 0.13
 abstract: PerlIO layer for normalizing line endings
 author: Autrijus Tang <autrijus@autrijus.org>
 license: perl
