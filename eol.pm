@@ -4,7 +4,7 @@ use 5.007003;
 use XSLoader;
 use Exporter;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 our @ISA = qw(Exporter);
 
 # symbols to export on request

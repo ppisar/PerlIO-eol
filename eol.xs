@@ -65,12 +65,7 @@ PerlIOEOL_get_base(pTHX_ PerlIO *f)
 	if (!b->bufsiz)
 	    b->bufsiz = 4096;
 
-	b->buf = Newz(
-            'B',
-            b->buf,
-            b->bufsiz * ( (s->read.eol == EOL_CRLF) ? 2 : 1 ),
-            STDCHAR
-        );
+	b->buf = Newz( 'B', b->buf, b->bufsiz * ( (s->read.eol == EOL_CRLF) ? 2 : 1 ), STDCHAR );
 
 	if (!b->buf) {
 	    b->buf = (STDCHAR *) & b->oneword;
@@ -114,10 +109,7 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
 
     if (start >= end) { return count; }
 
-    return (
-        (start + PerlIOBuf_write(aTHX_ f, start, end - start))
-            - (STDCHAR*)vbuf
-    );
+    return ( (start + PerlIOBuf_write(aTHX_ f, start, end - start)) - (STDCHAR*)vbuf );
 }
 
 IV
@@ -158,9 +150,7 @@ PerlIOEOL_open(pTHX_ PerlIO_funcs *self, PerlIO_list_t *layers,
                PerlIO *old, int narg, SV **args)
 {
     SV *arg = (narg > 0) ? *args : PerlIOArg;
-    PerlIO *f = PerlIOBuf_open(
-        self, layers, n, mode, fd, imode, perm, old, narg, args
-    );
+    PerlIO *f = PerlIOBuf_open( aTHX_ self, layers, n, mode, fd, imode, perm, old, narg, args );
 
     if (f) {
         PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
