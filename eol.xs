@@ -269,6 +269,7 @@ BOOT:
 unsigned int
 eol_is_mixed(arg)
         SV  *arg
+    PROTOTYPE: $
     CODE:
         STRLEN len;
         register U8 *p, *end;
@@ -290,5 +291,37 @@ eol_is_mixed(arg)
                 }
             }
         }
+    OUTPUT:
+        RETVAL
+
+char *
+CR()
+    PROTOTYPE:
+    CODE:
+        RETVAL = PerlIOEOL_CR;
+    OUTPUT:
+        RETVAL
+
+char *
+LF()
+    PROTOTYPE:
+    CODE:
+        RETVAL = PerlIOEOL_LF;
+    OUTPUT:
+        RETVAL
+
+char *
+CRLF()
+    PROTOTYPE:
+    CODE:
+        RETVAL = PerlIOEOL_CRLF;
+    OUTPUT:
+        RETVAL
+
+char *
+NATIVE()
+    PROTOTYPE:
+    CODE:
+        RETVAL = PerlIOEOL_NATIVE;
     OUTPUT:
         RETVAL

@@ -4,9 +4,11 @@ use 5.007003;
 use XSLoader;
 use Exporter;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(eol_is_mixed);  # symbols to export on request
+
+# symbols to export on request
+our @EXPORT_OK = qw(eol_is_mixed CR LF CRLF NATIVE);
 
 XSLoader::load __PACKAGE__, $VERSION;
 
@@ -18,8 +20,8 @@ PerlIO::eol - PerlIO layer for normalizing line endings
 
 =head1 VERSION
 
-This document describes version 0.02 of PerlIO::eol, released 
-October 7, 2004.
+This document describes version 0.04 of PerlIO::eol, released 
+October 9, 2004.
 
 =head1 SYNOPSIS
 
@@ -46,6 +48,8 @@ layer; this is usually done using a C<:raw> prefix.
 This module also optionally exports a C<eol_is_mixed> function; it takes a
 string and returns the position of the first inconsistent line ending found
 in that string, or C<0> if the line endings are consistent.
+
+The C<CR>, C<LF>, <CRLF> and <NATIVE> constants are also exported at request.
 
 =head1 AUTHORS
 

@@ -1,18 +1,20 @@
+use strict;
 use Test::More tests => 15;
 
-my ($CR, $LF) = ("\015", "\012");
+BEGIN { use_ok('PerlIO::eol', qw( eol_is_mixed CR LF CRLF NATIVE )) }
 
-use_ok('PerlIO::eol', qw( eol_is_mixed ));
+my ($CR, $LF, $CRLF) = (CR, LF, CRLF);
+
 is( eol_is_mixed("."), 0 );
-is( eol_is_mixed(".$CR$LF."), 0 );
+is( eol_is_mixed(".$CRLF."), 0 );
 is( eol_is_mixed(".$CR.$LF."), 3 );
-is( eol_is_mixed(".$CR$LF.$CR"), 4 );
+is( eol_is_mixed(".$CRLF.$CR"), 4 );
 
 $/ = undef;
 
 {
     open my $w, ">:raw", "read" or die "can't create testfile: $!";
-    print $w "...$CR$LF$LF$CR...";
+    print $w "...$CRLF$LF$CR...";
 }
 
 {
@@ -27,7 +29,7 @@ $/ = undef;
 
 {
     ok(open(my $r, "<:raw:eol(CRLF)", "read"), "open for read");
-    is <$r>, "...$CR$LF$CR$LF$CR$LF...", "read";
+    is <$r>, "...$CRLF$CRLF$CRLF...", "read";
 }
 
 {

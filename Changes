@@ -1,3 +1,9 @@
+[Changes for 0.04 - 2004-10-09]
+
+* We now optionally exports CR, LF, CRLF and NATIVE constants,
+  at requests from Chia-Liang Kao.
+* eol_is_mixed is now prototyped as ($).
+
 [Changes for 0.03 - 2004-10-08]
 
 * Fix building problems on Win32.
