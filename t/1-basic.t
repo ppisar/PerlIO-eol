@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 21;
+use Test::More tests => 22;
 
 BEGIN { use_ok('PerlIO::eol', qw( eol_is_mixed CR LF CRLF NATIVE )) }
 
@@ -42,6 +42,7 @@ sub is_hex ($$;$) {
 }
 
 {
+    local $@;
     ok(open(my $r, "<:raw:eol(CR!)", "read"), "open for read");
     is(eval { <$r> }, undef, 'mixed encoding');
     like($@, qr/Mixed newlines/, 'raises exception');
@@ -53,6 +54,13 @@ sub is_hex ($$;$) {
     local $SIG{__WARN__} = sub { $warning = $_[0] };
     is_hex(<$r>, "...$CRLF$CRLF$CRLF...", "read");
     like($warning, qr/Mixed newlines/, 'raises exception');
+}
+
+{
+    local $@;
+    open my $w, ">:raw:eol(LF!)", "read" or die "can't create testfile: $!";
+    eval { print $w "...$CRLF$LF$CR..." };
+    like($@, qr/Mixed newlines/, 'raises exception');
 }
 
 {

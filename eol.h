@@ -38,14 +38,14 @@ enum {
         start = i + 1; \
     }
 
-#define EOL_LoopForMixed( baton, do_break ) \
+#define EOL_LoopForMixed( baton, do_break, do_lf ) \
     EOL_LoopBegin; \
-    EOL_CheckForMixedCRLF( baton.seen, do_break, NOOP );
+    EOL_CheckForMixedCRLF( baton.seen, do_break, NOOP, do_lf );
 
-#define EOL_CheckForMixedCRLF( seen, do_break, do_crlf ) \
+#define EOL_CheckForMixedCRLF( seen, do_break, do_crlf, do_lf ) \
     switch (*i) { \
         case EOL_LF: \
-            EOL_Seen( seen, EOL_LF, do_break ); break; \
+            EOL_Seen( seen, EOL_LF, do_break ); do_lf; \
         case EOL_CR: \
             if ((i == end - 1) || i[1] != EOL_LF ) { \
                 EOL_Seen( seen, EOL_CR, do_break ); \
@@ -87,14 +87,14 @@ enum {
     else if (strchr( sym, '?' ))    { baton.mixed = EOL_Mixed_Warn; } \
     else                            { baton.mixed = EOL_Mixed_OK; }
 
-#define EOL_Dispatch(baton, do_cr, do_lf, do_crlf) \
+#define EOL_Dispatch(baton, run_cr, run_lf, run_crlf) \
     switch ( baton.eol ) { \
         case EOL_LF: \
-            EOL_Loop( baton, EOL_LoopForCR, do_lf ); break; \
+            EOL_Loop( baton, EOL_LoopForCR, run_lf, continue ); break; \
         case EOL_CRLF: \
-            EOL_Loop( baton, EOL_LoopForCRorLF, do_crlf ); break; \
+            EOL_Loop( baton, EOL_LoopForCRorLF, run_crlf, break ); break; \
         case EOL_CR: \
-            EOL_Loop( baton, EOL_LoopForCRorLF, do_cr ); break; \
+            EOL_Loop( baton, EOL_LoopForCRorLF, run_cr, break ); break; \
     }
 
 #define EOL_StartUpdate(baton) \
@@ -114,14 +114,14 @@ enum {
     if (seen && (seen != sym)) { do_break; } \
     seen = sym;
 
-#define EOL_Loop( baton, do_check, do_loop ) \
+#define EOL_Loop( baton, run_check, run_loop, do_lf ) \
     switch ( baton.mixed ) { \
         case EOL_Mixed_OK: \
-            do_check; do_loop; EOL_LoopEnd; break; \
+            run_check; run_loop; EOL_LoopEnd; break; \
         case EOL_Mixed_Fatal: \
-            EOL_LoopForMixed( baton, EOL_Break_Fatal ); do_loop; EOL_LoopEnd; break; \
+            EOL_LoopForMixed( baton, EOL_Break_Fatal, do_lf ); run_loop; EOL_LoopEnd; break; \
         case EOL_Mixed_Warn: \
-            EOL_LoopForMixed( baton, EOL_Break_Warn ); do_loop; EOL_LoopEnd; \
+            EOL_LoopForMixed( baton, EOL_Break_Warn, do_lf ); run_loop; EOL_LoopEnd; \
     }
 
 /* vim: set filetype=perl: */
