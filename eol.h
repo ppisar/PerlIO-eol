@@ -9,6 +9,7 @@ typedef struct {
     PerlIOBuf       base;
     PerlIOEOL_Baton read;
     PerlIOEOL_Baton write;
+    STDCHAR         *name;
 } PerlIOEOL;
 
 enum {
@@ -104,11 +105,13 @@ enum {
 #define EOL_Break \
     RETVAL = (i + len - end); break;
 
-#define EOL_Break_Fatal \
-    Perl_die(aTHX_ "Mixed newlines");
-
-#define EOL_Break_Warn \
-    Perl_warn(aTHX_ "Mixed newlines");
+#define EOL_Break_Error(do_error) \
+    if (s->name == NULL) { \
+        do_error(aTHX_ "Mixed newlines"); \
+    } \
+    else { \
+        do_error(aTHX_ "Mixed newlines found in \"%s\"", s->name); \
+    }
 
 #define EOL_Seen(seen, sym, do_break) \
     if (seen && (seen != sym)) { do_break; } \
@@ -119,9 +122,9 @@ enum {
         case EOL_Mixed_OK: \
             run_check; run_loop; EOL_LoopEnd; break; \
         case EOL_Mixed_Fatal: \
-            EOL_LoopForMixed( baton, EOL_Break_Fatal, do_lf ); run_loop; EOL_LoopEnd; break; \
+            EOL_LoopForMixed( baton, EOL_Break_Error(Perl_die), do_lf ); run_loop; EOL_LoopEnd; break; \
         case EOL_Mixed_Warn: \
-            EOL_LoopForMixed( baton, EOL_Break_Warn, do_lf ); run_loop; EOL_LoopEnd; \
+            EOL_LoopForMixed( baton, EOL_Break_Error(Perl_warn), do_lf ); run_loop; EOL_LoopEnd; \
     }
 
 /* vim: set filetype=perl: */

@@ -1,3 +1,9 @@
+[Changes for 0.11 - 2004-10-16]
+
+* Exceptions raised by '!' and '?' now includes the filename.
+* The exception is reworded as 'Mixed newlines found in "filename",
+  or 'Mixed newlines found' if a filename cannot be obtained.
+
 [Changes for 0.10 - 2004-10-16]
 
 * In reading "LF!" and "LF?", when an incoming LF is found, simply remember

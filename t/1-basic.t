@@ -53,14 +53,14 @@ sub is_hex ($$;$) {
     my $warning;
     local $SIG{__WARN__} = sub { $warning = $_[0] };
     is_hex(<$r>, "...$CRLF$CRLF$CRLF...", "read");
-    like($warning, qr/Mixed newlines/, 'raises exception');
+    like($warning, qr/Mixed newlines found in "read"/, 'raises exception');
 }
 
 {
     local $@;
     open my $w, ">:raw:eol(LF!)", "read" or die "can't create testfile: $!";
     eval { print $w "...$CRLF$LF$CR..." };
-    like($@, qr/Mixed newlines/, 'raises exception');
+    like($@, qr/Mixed newlines found in "read"/, 'raises exception');
 }
 
 {

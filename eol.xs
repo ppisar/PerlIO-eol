@@ -22,6 +22,7 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
         PerlIOBase(f)->flags &= ~PERLIO_F_UTF8;
     }
 
+    s->name = NULL;
     s->read.cr = s->write.cr = 0;
     s->read.seen = s->write.seen = 0;
 
@@ -151,6 +152,24 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     return 0;
 }
 
+PerlIO *
+PerlIOEOL_open(pTHX_ PerlIO_funcs *self, PerlIO_list_t *layers,
+               IV n, const char *mode, int fd, int imode, int perm,
+               PerlIO *old, int narg, SV **args)
+{
+    SV *arg = (narg > 0) ? *args : PerlIOArg;
+    PerlIO *f = PerlIOBuf_open(
+        self, layers, n, mode, fd, imode, perm, old, narg, args
+    );
+
+    if (f) {
+        PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
+        s->name = savepv( SvPV_nolen(arg) );
+    }
+
+    return f;
+}
+
 PerlIO_funcs PerlIO_eol = {
     sizeof(PerlIO_funcs),
     "eol",
@@ -158,7 +177,7 @@ PerlIO_funcs PerlIO_eol = {
     PERLIO_K_BUFFERED | PERLIO_K_UTF8, 
     PerlIOEOL_pushed,
     PerlIOBuf_popped,
-    NULL,
+    PerlIOEOL_open,
     PerlIOBase_binmode,
     NULL,
     PerlIOBase_fileno,

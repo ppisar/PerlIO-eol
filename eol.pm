@@ -4,7 +4,7 @@ use 5.007003;
 use XSLoader;
 use Exporter;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 our @ISA = qw(Exporter);
 
 # symbols to export on request
@@ -20,7 +20,7 @@ PerlIO::eol - PerlIO layer for normalizing line endings
 
 =head1 VERSION
 
-This document describes version 0.10 of PerlIO::eol, released 
+This document describes version 0.11 of PerlIO::eol, released 
 October 16, 2004.
 
 =head1 SYNOPSIS
@@ -62,7 +62,7 @@ The C<CR>, C<LF>, <CRLF> and <NATIVE> constants are also exported at request.
 
 Autrijus Tang E<lt>autrijus@autrijus.orgE<gt>
 
-Based on L<PerlIO::nline> by Ben Morrow, E<lt>PerlIO-eol@morrow.me.ukE<gt>.
+Inspired by L<PerlIO::nline> by Ben Morrow, E<lt>PerlIO-eol@morrow.me.ukE<gt>.
 
 =head1 COPYRIGHT
 
