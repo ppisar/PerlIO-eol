@@ -76,10 +76,39 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
     else if ( strEQ( eol_w, "crlf" ) )    { s->write_eol = PerlIOEOL_CRLF; }
     else if ( strEQ( eol_w, "native" ) )  { s->write_eol = PerlIOEOL_NATIVE; }
     else {
-        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_r);
+        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_w);
     }
 
+    Safefree( eol_r );
+
     return PerlIOBuf_pushed(aTHX_ f, mode, arg, tab);
+}
+
+STDCHAR *
+PerlIOEOL_get_base(pTHX_ PerlIO *f)
+{
+    PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
+    if (!b->buf) {
+        PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
+
+	if (!b->bufsiz)
+	    b->bufsiz = 4096;
+
+	b->buf = Newz(
+            'B',
+            b->buf,
+            b->bufsiz * strlen( s->read_eol ),
+            STDCHAR
+        );
+
+	if (!b->buf) {
+	    b->buf = (STDCHAR *) & b->oneword;
+	    b->bufsiz = sizeof(b->oneword);
+	}
+	b->ptr = b->buf;
+	b->end = b->ptr;
+    }
+    return b->buf;
 }
 
 void
@@ -191,8 +220,10 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
             Copy(start, ptr, i - start, STDCHAR);
             ptr += i - start;
         }
-        b->ptr = b->buf = buf;
-        b->end = ptr;
+        Copy(buf, b->buf, ptr - buf, STDCHAR);
+        b->ptr = b->buf;
+        b->end = b->buf + (ptr - buf);
+        Safefree(buf);
     }
 
     return 0;
@@ -257,7 +288,7 @@ PerlIO_funcs PerlIO_eol = {
     PerlIOBase_error,
     PerlIOEOL_clearerr,
     PerlIOBase_setlinebuf,
-    PerlIOBuf_get_base,
+    PerlIOEOL_get_base,
     PerlIOBuf_bufsiz,
     PerlIOBuf_get_ptr,
     PerlIOBuf_get_cnt,

@@ -1,3 +1,9 @@
+[Changes for 0.07 - 2004-10-15]
+
+* Safely frees allocated buffer memory during reads.
+* Also safely frees the "eol_r" marker when the layer is pushed.
+* Correct "unknown eol_w" diagnostics message.
+
 [Changes for 0.06 - 2004-10-15]
 
 * Macroize the inner fill() loop into fill.h, which saves many cycles.
