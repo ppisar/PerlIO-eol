@@ -4,7 +4,7 @@ use 5.007003;
 use XSLoader;
 use Exporter;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 our @ISA = qw(Exporter);
 
 # symbols to export on request
@@ -20,14 +20,17 @@ PerlIO::eol - PerlIO layer for normalizing line endings
 
 =head1 VERSION
 
-This document describes version 0.08 of PerlIO::eol, released 
-October 15, 2004.
+This document describes version 0.09 of PerlIO::eol, released 
+October 16, 2004.
 
 =head1 SYNOPSIS
 
     binmode STDIN, ":raw:eol(LF)";
     binmode STDOUT, ":raw:eol(CRLF)";
     open FH, "+<:raw:eol(LF-Native)", "file";
+
+    binmode STDOUT, ":raw:eol(CRLF?)"; # warns on mixed newlines
+    binmode STDOUT, ":raw:eol(CRLF!)"; # dies on mixed newlines
 
     use PerlIO::eol qw( eol_is_mixed );
     my $pos = eol_is_mixed( "mixed\nstring\r" );
@@ -41,6 +44,10 @@ If you specify two different line endings joined by a C<->, it will use the
 first one for reading and the second one for writing.  For example, the
 C<LF-CRLF> encoding means that all input should be normalized to C<LF>, and
 all output should be normalized to C<CRLF>.
+
+By default, data with mixed newlines are normalized silently.  Append a C<!>
+to the line ending will raise a fatal exception when mixed newlines are
+spotted.  Append a C<?> will raise a warning instead.
 
 It is advised to pop any potential C<:crlf> or encoding layers before this
 layer; this is usually done using a C<:raw> prefix.

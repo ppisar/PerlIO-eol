@@ -16,37 +16,31 @@
     FillCopyBuffer;
 
 #define FillCheckForCRLF \
-    EOL_CheckForCRLF( s->read_cr );
+    EOL_CheckForCRLF( s->read );
 
 #define FillCheckForCRandCRLF \
-    if (*i == 015) FillCheckForCRLF;
+    if (*i == EOL_CR) { FillCheckForCRLF };
 
 #define FillInsertCR \
-    *ptr++ = 015;
+    *ptr++ = EOL_CR;
 
 #define FillInsertLF \
-    *ptr++ = 012;
+    *ptr++ = EOL_LF;
 
 #define FillWithCRLF \
-    EOL_LoopForCRorLF; \
     FillInitializeBufferCopy; \
     FillInsertCR; \
     FillInsertLF; \
-    FillCheckForCRandCRLF; \
-    EOL_LoopEnd;
+    FillCheckForCRandCRLF;
 
 #define FillWithLF \
-    EOL_LoopForCR; \
     FillInitializeBuffer; \
     FillInsertLF; \
-    FillCheckForCRLF; \
-    EOL_LoopEnd;
+    FillCheckForCRLF;
 
 #define FillWithCR \
-    EOL_LoopForCRorLF; \
     FillInitializeBuffer; \
     FillInsertCR; \
-    FillCheckForCRandCRLF; \
-    EOL_LoopEnd;
+    FillCheckForCRandCRLF;
 
 /* vim: set filetype=perl: */

@@ -1,3 +1,9 @@
+[Changes for 0.09 - 2004-10-16]
+
+* Mixed line endings may now be detected by appending '!' or '?' symbols
+  to the line ending specifier, eg. ":eol(CRLF!)".
+* Unified read and write logic into OnceAndOnlyOnce macros.
+
 [Changes for 0.08 - 2004-10-15]
 
 * Macroize the inner write() loop too.

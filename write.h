@@ -6,30 +6,24 @@
     WriteInsert( start, (i - start) );
 
 #define WriteCheckForCRLF \
-    EOL_CheckForCRLF( s->write_cr );
+    EOL_CheckForCRLF( s->write );
 
 #define WriteCheckForCRandCRLF \
-    if (*i == 015) WriteCheckForCRLF;
+    if (*i == EOL_CR) { WriteCheckForCRLF };
 
 #define WriteWithCRLF \
-    EOL_LoopForCRorLF; \
     WriteOutBuffer; \
-    WriteInsert( PerlIOEOL_CRLF, 2 ); \
-    WriteCheckForCRandCRLF; \
-    EOL_LoopEnd;
+    WriteInsert( "\015\012", 2 ); \
+    WriteCheckForCRandCRLF;
 
 #define WriteWithLF \
-    EOL_LoopForCR; \
     WriteOutBuffer; \
-    WriteInsert( PerlIOEOL_LF, 1 ); \
-    WriteCheckForCRLF; \
-    EOL_LoopEnd;
+    WriteInsert( "\012", 1 ); \
+    WriteCheckForCRLF;
 
 #define WriteWithCR \
-    EOL_LoopForCRorLF; \
     WriteOutBuffer; \
-    WriteInsert( PerlIOEOL_CR, 1 ); \
-    WriteCheckForCRandCRLF; \
-    EOL_LoopEnd;
+    WriteInsert( "\015", 1 ); \
+    WriteCheckForCRandCRLF;
 
 /* vim: set filetype=perl: */

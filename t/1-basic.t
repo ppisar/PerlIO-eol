@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 15;
+use Test::More tests => 21;
 
 BEGIN { use_ok('PerlIO::eol', qw( eol_is_mixed CR LF CRLF NATIVE )) }
 
@@ -39,6 +39,20 @@ sub is_hex ($$;$) {
 {
     ok(open(my $r, "<:raw:eol(CRLF)", "read"), "open for read");
     is_hex(<$r>, "...$CRLF$CRLF$CRLF...", "read");
+}
+
+{
+    ok(open(my $r, "<:raw:eol(CR!)", "read"), "open for read");
+    is(eval { <$r> }, undef, 'mixed encoding');
+    like($@, qr/Mixed newlines/, 'raises exception');
+}
+
+{
+    ok(open(my $r, "<:raw:eol(CRLF?)", "read"), "open for read");
+    my $warning;
+    local $SIG{__WARN__} = sub { $warning = $_[0] };
+    is_hex(<$r>, "...$CRLF$CRLF$CRLF...", "read");
+    like($warning, qr/Mixed newlines/, 'raises exception');
 }
 
 {
