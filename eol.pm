@@ -2,7 +2,7 @@ package PerlIO::eol;
 
 use 5.007003;
 use XSLoader;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 XSLoader::load __PACKAGE__, $VERSION;
 
 1;
@@ -13,7 +13,7 @@ PerlIO::eol - PerlIO layer for normalizing line endings
 
 =head1 VERSION
 
-This document describes version 0.01 of PerlIO::eol, released 
+This document describes version 0.02 of PerlIO::eol, released 
 October 7, 2004.
 
 =head1 SYNOPSIS
@@ -28,12 +28,6 @@ line ending.  It works for both input and output handles.
 
 It is advised to pop any potential C<:crlf> or encoding layers before this
 layer; this is usually done using a C<:raw> prefix.
-
-=head1 CAVEATS
-
-If the source stream ends with a single C<CR>, it may be silently dropped;
-this is a limitation inherited from L<PerlIO::nline>'s design.  Patches to
-implement the correct C<Flush> and C<Unread> handlers are most welcome.
 
 =head1 AUTHORS
 

@@ -64,6 +64,7 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
     PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
     const STDCHAR *i, *start = vbuf, *end = vbuf + count;
+    bool is_crlf = (strEQ( s->read_eol, "\015\012" ));
 
     if (s->write_cr && *start == 012) {
         start++;
@@ -79,11 +80,18 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
             if (PerlIOBuf_write(aTHX_ f, start, i - start) < i - start) {
                 return i - (STDCHAR*)vbuf;
             }
-            if (PerlIOBuf_write(aTHX_ f, s->write_eol, 2) < 2) {
-                return i - (STDCHAR*)vbuf;
+
+            if (is_crlf) {
+                if (PerlIOBuf_write(aTHX_ f, "\015\012", 2) < 2) {
+                    return i - (STDCHAR*)vbuf;
+                }
+            }
+            else {
+                if (PerlIOBuf_write(aTHX_ f, s->write_eol, 1) < 1) {
+                    return i - (STDCHAR*)vbuf;
+                }
             }
 
-            /* XXX what to do if we just write a single \015? */
             if (*i == 015) {
                 if (i == end - 1) {
                     s->write_cr = 1;
@@ -146,7 +154,6 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
                 *ptr++ = *(s->read_eol);
             }
 
-            /* XXX what to do if we just read a single \015? */
             if (*i == 015) {
                 if (i == end - 1) {
                     s->read_cr = 1;
@@ -161,6 +168,10 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     }
 
     if (buf != NULL) {
+        if (i > start) {
+            Copy(start, ptr, i - start, STDCHAR);
+            ptr += i - start;
+        }
         b->ptr = b->buf = buf;
         b->end = ptr;
     }

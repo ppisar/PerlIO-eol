@@ -1,3 +1,8 @@
+[Changes for 0.02 - 2004-10-07]
+
+* Fixed the buffer offset problem on non-CRLF settings.
+* Trailing data for read operations were ignored.  Oops.
+
 [Changes for 0.01 - 2004-10-07]
 
 * Initial release to CPAN.

@@ -1,5 +1,5 @@
 #defaults
-^eol\.(?!pm|xs)$
+^eol\.(?!pm|xs).+$
 ^.*\.pdb$
 ^MANIFEST.bak$
 ^Makefile$
