@@ -1,3 +1,9 @@
+[Changes for 0.05 - 2004-10-09]
+
+* PerlIO_read() calls were returning unneeded errors when the
+  read block is only partially filled.  Fix this by taking
+  _read calls into our hands and save some bits of indirection.
+
 [Changes for 0.04 - 2004-10-09]
 
 * We now optionally exports CR, LF, CRLF and NATIVE constants,

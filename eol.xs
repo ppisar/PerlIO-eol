@@ -165,8 +165,8 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     bool is_crlf = (strEQ( s->read_eol, PerlIOEOL_CRLF ));
     STDCHAR *buf = NULL, *ptr = NULL;
 
-    if (code == -1) {
-        return code;
+    if (code != 0) {
+	return code;
     }
 
     /* OK, we got a buffer... now deal with it. */
@@ -219,6 +219,41 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     return 0;
 }
 
+SSize_t
+PerlIOEOL_read(pTHX_ PerlIO *f, void *vbuf, Size_t count)
+{
+    STDCHAR *buf = (STDCHAR *) vbuf;
+    if (f) {
+        if (!(PerlIOBase(f)->flags & PERLIO_F_CANREAD)) {
+	    PerlIOBase(f)->flags |= PERLIO_F_ERROR;
+	    SETERRNO(EBADF, SS_IVCHAN);
+	    return 0;
+	}
+	while (count > 0) {
+	    SSize_t avail = PerlIOBuf_get_cnt(aTHX_ f);
+	    SSize_t take = 0;
+	    if (avail > 0)
+		take = ((SSize_t)count < avail) ? count : avail;
+	    if (take > 0) {
+		STDCHAR *ptr = PerlIOBuf_get_ptr(aTHX_ f);
+		Copy(ptr, buf, take, STDCHAR);
+		PerlIOBuf_set_ptrcnt(aTHX_ f, ptr + take, (avail -= take));
+		count -= take;
+		buf += take;
+	    }
+	    if (count > 0 && avail <= 0) {
+		if (PerlIOEOL_fill(aTHX_ f) != 0) {
+		    /* We do not consider this an error. */
+		    PerlIOBase_clearerr(aTHX_ f);
+		    break;
+		}
+	    }
+	}
+	return (buf - (STDCHAR *) vbuf);
+    }
+    return 0;
+}
+
 PerlIO_funcs PerlIO_eol = {
     sizeof(PerlIO_funcs),
     "eol",
@@ -231,7 +266,7 @@ PerlIO_funcs PerlIO_eol = {
     NULL,
     PerlIOBase_fileno,
     PerlIOBuf_dup,
-    PerlIOBuf_read,
+    PerlIOEOL_read,
     PerlIOBuf_unread,
     PerlIOEOL_write,
     PerlIOBuf_seek,
