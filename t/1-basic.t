@@ -12,6 +12,15 @@ is( eol_is_mixed(".$CRLF.$CR"), 4 );
 
 $/ = undef;
 
+sub is_hex ($$;$) {
+    @_ = (
+        join(' ', unpack '(H2)*', $_[0]),
+        join(' ', unpack '(H2)*', $_[1]),
+        $_[2],
+    );
+    goto &is;
+}
+
 {
     open my $w, ">:raw", "read" or die "can't create testfile: $!";
     print $w "...$CRLF$LF$CR...";
@@ -19,37 +28,37 @@ $/ = undef;
 
 {
     ok(open(my $r, "<:raw:eol(CR)", "read"), "open for read");
-    is <$r>, "...$CR$CR$CR...", "read";
+    is_hex(<$r>, "...$CR$CR$CR...", "read");
 }
 
 {
     ok(open(my $r, "<:raw:eol(LF)", "read"), "open for read");
-    is <$r>, "...$LF$LF$LF...", "read";
+    is_hex(<$r>, "...$LF$LF$LF...", "read");
 }
 
 {
     ok(open(my $r, "<:raw:eol(CRLF)", "read"), "open for read");
-    is <$r>, "...$CRLF$CRLF$CRLF...", "read";
+    is_hex(<$r>, "...$CRLF$CRLF$CRLF...", "read");
 }
 
 {
     ok(open(my $w, ">:raw:eol(CrLf-lf)", "write"), "open for write");
-    print $w "$CR";
+    print $w "...$CR$LF...";
 }
 
 {
     open my $r, "<:raw", "write" or die "can't read testfile: $!";
-    is(<$r>, "$LF", "write");
+    is_hex(<$r>, "...$LF...", "write");
 }
 
 {
     ok(open(my $w, ">:raw:eol(LF-Native)", "write"), "open for write");
-    print $w "$CR";
+    print $w "...$CR";
 }
 
 {
     open my $r, "<", "write" or die "can't read testfile: $!";
-    is(<$r>, "\n", "write");
+    is_hex(<$r>, "...\n", "write");
 }
 
 END {

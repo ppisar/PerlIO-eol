@@ -1,4 +1,5 @@
 Changes
+eol.h
 eol.pm
 eol.xs
 fill.h
@@ -17,3 +18,4 @@ META.yml
 README
 SIGNATURE
 t/1-basic.t
+write.h

@@ -3,27 +3,10 @@
 #include "XSUB.h"
 #include "perlio.h"
 #include "perliol.h"
+
+#include "eol.h"
 #include "fill.h"
-
-typedef struct {
-    PerlIOBuf base;
-    bool      read_cr,   write_cr;
-    STDCHAR   *read_eol, *write_eol;
-} PerlIOEOL;
-
-#define PerlIOEOL_CR     "\015"
-#define PerlIOEOL_LF     "\012"
-#define PerlIOEOL_CRLF   "\015\012"
-
-#ifdef PERLIO_USING_CRLF
-#  define PerlIOEOL_NATIVE PerlIOEOL_CRLF
-#else
-#  ifdef MACOS_TRADITIONAL
-#    define PerlIOEOL_NATIVE PerlIOEOL_CR
-#  else
-#    define PerlIOEOL_NATIVE PerlIOEOL_LF
-#  endif
-#endif
+#include "write.h"
 
 IV
 PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
@@ -63,21 +46,8 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
     /* split off eol using strchr */
     if (eol_w == NULL) { eol_w = eol_r; }
 
-    if ( strEQ( eol_r, "cr" ) )           { s->read_eol = PerlIOEOL_CR; }
-    else if ( strEQ( eol_r, "lf" ) )      { s->read_eol = PerlIOEOL_LF; }
-    else if ( strEQ( eol_r, "crlf" ) )    { s->read_eol = PerlIOEOL_CRLF; }
-    else if ( strEQ( eol_r, "native" ) )  { s->read_eol = PerlIOEOL_NATIVE; }
-    else {
-        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_r);
-    }
-
-    if ( strEQ( eol_w, "cr" ) )           { s->write_eol = PerlIOEOL_CR; }
-    else if ( strEQ( eol_w, "lf" ) )      { s->write_eol = PerlIOEOL_LF; }
-    else if ( strEQ( eol_w, "crlf" ) )    { s->write_eol = PerlIOEOL_CRLF; }
-    else if ( strEQ( eol_w, "native" ) )  { s->write_eol = PerlIOEOL_NATIVE; }
-    else {
-        Perl_die(aTHX_ "Unknown eol '%s'; must pass CRLF, CR or LF or Native to :eol().", eol_w);
-    }
+    EOL_AssignEOL( eol_r, s->read_eol );
+    EOL_AssignEOL( eol_w, s->write_eol );
 
     Safefree( eol_r );
 
@@ -136,43 +106,21 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
 
     end += (unsigned int)count;
 
-    if (s->write_cr && *start == 012) {
-        start++;
-    }
+    if (s->write_cr && *start == 012) { start++; }
     s->write_cr = 0;
     
     if (!(PerlIOBase(f)->flags & PERLIO_F_CANWRITE)) {
         return 0;
     }
 
-    for (i = start; i < end; i++) {
-        if (*i == 015 || *i == 012) {
-            if (PerlIOBuf_write(aTHX_ f, start, i - start) < i - start) {
-                return i - (STDCHAR*)vbuf;
-            }
-
-            if (is_crlf) {
-                if (PerlIOBuf_write(aTHX_ f, PerlIOEOL_CRLF, 2) < 2) {
-                    return i - (STDCHAR*)vbuf;
-                }
-            }
-            else {
-                if (PerlIOBuf_write(aTHX_ f, s->write_eol, 1) < 1) {
-                    return i - (STDCHAR*)vbuf;
-                }
-            }
-
-            if (*i == 015) {
-                if (i == end - 1) {
-                    s->write_cr = 1;
-                }
-                else if (i[1] == 012) {
-                    i++;
-                }
-            }
-
-            start = i + 1;
-        }
+    if (strEQ( s->write_eol, PerlIOEOL_LF )) {
+        WriteWithLF;
+    }
+    else if (strEQ( s->write_eol, PerlIOEOL_CRLF )) {
+        WriteWithCRLF;
+    }
+    else if (strEQ( s->write_eol, PerlIOEOL_CR )) {
+        WriteWithCR;
     }
 
     if (start < end) {
@@ -194,15 +142,11 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
     const STDCHAR *i, *start = b->ptr, *end = b->end;
     STDCHAR *buf = NULL, *ptr = NULL;
 
-    if (code != 0) {
-	return code;
-    }
+    if (code != 0) { return code; }
 
     /* OK, we got a buffer... now deal with it. */
 
-    if (s->read_cr && *start == 012) {
-        start++;
-    }
+    if (s->read_cr && *start == 012) { start++; }
     s->read_cr = 0;
 
     if (strEQ( s->read_eol, PerlIOEOL_LF )) {
@@ -215,52 +159,21 @@ PerlIOEOL_fill(pTHX_ PerlIO * f)
         FillWithCR;
     }
 
-    if (buf != NULL) {
-        if (i > start) {
-            Copy(start, ptr, i - start, STDCHAR);
-            ptr += i - start;
-        }
+    if (buf == NULL) { return 0; }
+
+    if (i > start) {
+        Copy(start, ptr, i - start, STDCHAR);
+        ptr += i - start;
+    }
+
+    b->ptr = b->buf;
+    b->end = b->buf + (ptr - buf);
+
+    if (buf != b->buf) {
         Copy(buf, b->buf, ptr - buf, STDCHAR);
-        b->ptr = b->buf;
-        b->end = b->buf + (ptr - buf);
         Safefree(buf);
     }
 
-    return 0;
-}
-
-SSize_t
-PerlIOEOL_read(pTHX_ PerlIO *f, void *vbuf, Size_t count)
-{
-    STDCHAR *buf = (STDCHAR *) vbuf;
-    if (f) {
-        if (!(PerlIOBase(f)->flags & PERLIO_F_CANREAD)) {
-	    PerlIOBase(f)->flags |= PERLIO_F_ERROR;
-	    SETERRNO(EBADF, SS_IVCHAN);
-	    return 0;
-	}
-	while (count > 0) {
-	    SSize_t avail = PerlIOBuf_get_cnt(aTHX_ f);
-	    SSize_t take = 0;
-	    if (avail > 0)
-		take = ((SSize_t)count < avail) ? count : avail;
-	    if (take > 0) {
-		STDCHAR *ptr = PerlIOBuf_get_ptr(aTHX_ f);
-		Copy(ptr, buf, take, STDCHAR);
-		PerlIOBuf_set_ptrcnt(aTHX_ f, ptr + take, (avail -= take));
-		count -= take;
-		buf += take;
-	    }
-	    if (count > 0 && avail <= 0) {
-		if (PerlIOEOL_fill(aTHX_ f) != 0) {
-		    /* We do not consider this an error. */
-		    PerlIOBase_clearerr(aTHX_ f);
-		    break;
-		}
-	    }
-	}
-	return (buf - (STDCHAR *) vbuf);
-    }
     return 0;
 }
 
@@ -276,7 +189,7 @@ PerlIO_funcs PerlIO_eol = {
     NULL,
     PerlIOBase_fileno,
     PerlIOBuf_dup,
-    PerlIOEOL_read,
+    PerlIOBuf_read,
     PerlIOBuf_unread,
     PerlIOEOL_write,
     PerlIOBuf_seek,

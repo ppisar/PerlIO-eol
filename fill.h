@@ -1,36 +1,25 @@
-#define FillInitializeBuffer \
+#define FillCopyBuffer \
+    Copy(start, ptr, i - start, STDCHAR); \
+    ptr += i - start;
+
+#define FillInitializeBufferCopy \
     if (buf == NULL) { \
         New('b', buf, (i - start) + ((end - i + 1) * 2), STDCHAR); \
         ptr = buf; \
     } \
-    Copy(start, ptr, i - start, STDCHAR); \
-    ptr += i - start;
+    FillCopyBuffer;
+
+#define FillInitializeBuffer \
+    if (buf == NULL) { \
+        ptr = buf = b->buf; \
+    } \
+    FillCopyBuffer;
 
 #define FillCheckForCRLF \
-    if (i == end - 1) { \
-        s->read_cr = 1; \
-    } \
-    else if (i[1] == 012) { \
-        i++; \
-    }
+    EOL_CheckForCRLF( s->read_cr );
 
 #define FillCheckForCRandCRLF \
     if (*i == 015) FillCheckForCRLF;
-
-#define FillOnlyForCR \
-    if (*i != 015) continue; \
-    FillInitializeBuffer;
-
-#define FillOnlyForCRorLF \
-    if ( (*i != 015) && (*i != 012) ) continue; \
-    FillInitializeBuffer;
-
-#define FillLoopBegin \
-    for (i = start; i < end; i++) {
-
-#define FillLoopEnd \
-        start = i + 1; \
-    }
 
 #define FillInsertCR \
     *ptr++ = 015;
@@ -39,25 +28,25 @@
     *ptr++ = 012;
 
 #define FillWithCRLF \
-    FillLoopBegin; \
-    FillOnlyForCRorLF; \
+    EOL_LoopForCRorLF; \
+    FillInitializeBufferCopy; \
     FillInsertCR; \
     FillInsertLF; \
     FillCheckForCRandCRLF; \
-    FillLoopEnd;
+    EOL_LoopEnd;
 
 #define FillWithLF \
-    FillLoopBegin; \
-    FillOnlyForCR; \
+    EOL_LoopForCR; \
+    FillInitializeBuffer; \
     FillInsertLF; \
     FillCheckForCRLF; \
-    FillLoopEnd;
+    EOL_LoopEnd;
 
 #define FillWithCR \
-    FillLoopBegin; \
-    FillOnlyForCRorLF; \
+    EOL_LoopForCRorLF; \
+    FillInitializeBuffer; \
     FillInsertCR; \
     FillCheckForCRandCRLF; \
-    FillLoopEnd;
+    EOL_LoopEnd;
 
 /* vim: set filetype=perl: */

@@ -1,3 +1,11 @@
+[Changes for 0.08 - 2004-10-15]
+
+* Macroize the inner write() loop too.
+* Further refactor common macros into eol.h.
+* LF and CR disciplines no longer need to allocate any additional memories
+  during fill().
+* Test failures are now displayed in hex code for easier debugging.
+
 [Changes for 0.07 - 2004-10-15]
 
 * Safely frees allocated buffer memory during reads.
