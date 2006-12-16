@@ -1,3 +1,7 @@
+[Changes for 0.14 - 2006-12-15]
+
+* Doc fixes.
+
 [Changes for 0.13 - 2004-10-18]
 
 * Coupling read() calls with CRLF line endings resulted in false

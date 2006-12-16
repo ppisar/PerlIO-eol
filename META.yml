@@ -1,12 +1,13 @@
-name: PerlIO-eol
-version: 0.13
 abstract: PerlIO layer for normalizing line endings
-author: Autrijus Tang <autrijus@autrijus.org>
-license: perl
+author: Audrey Tang <audreyt@audreyt.org>
 distribution_type: module
-requires:
-  perl: 5.7.3
-no_index:
-  directory:
+generated_by: Module::Install version 0.64
+license: perl
+name: PerlIO-eol
+no_index: 
+  directory: 
     - inc
-generated_by: Module::Install version 0.35
+    - t
+requires: 
+  perl: 5.7.3
+version: 0.14
