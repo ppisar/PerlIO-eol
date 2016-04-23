@@ -1,82 +1,82 @@
-[Changes for 0.14 - 2006-12-15]
+0.14     2006-12-15
 
-* Doc fixes.
+    * Doc fixes.
 
-[Changes for 0.13 - 2004-10-18]
+0.13     2004-10-18
 
-* Coupling read() calls with CRLF line endings resulted in false
-  positives in mixed encoding detection, if the read was on the
-  CR/LF boundary.  Fixed.
+    * Coupling read() calls with CRLF line endings resulted in false
+      positives in mixed encoding detection, if the read was on the
+      CR/LF boundary.  Fixed.
 
-[Changes for 0.12 - 2004-10-18]
+0.12     2004-10-18
 
-* Building on threaded Perl versions was broken, due to a missing
-  aTHX_ symbol.  Reported by Roberto Aguilar.
+    * Building on threaded Perl versions was broken, due to a missing
+      aTHX_ symbol.  Reported by Roberto Aguilar.
 
-[Changes for 0.11 - 2004-10-16]
+0.11     2004-10-16
 
-* Exceptions raised by '!' and '?' now includes the filename.
-* The exception is reworded as 'Mixed newlines found in "filename",
-  or 'Mixed newlines found' if a filename cannot be obtained.
+    * Exceptions raised by '!' and '?' now includes the filename.
+    * The exception is reworded as 'Mixed newlines found in "filename",
+      or 'Mixed newlines found' if a filename cannot be obtained.
 
-[Changes for 0.10 - 2004-10-16]
+0.10     2004-10-16
 
-* In reading "LF!" and "LF?", when an incoming LF is found, simply remember
-  it without altering the input buffer; this saves many Copy() calls.
-* Add a test on detecting mixed line endings in output streams.
+    * In reading "LF!" and "LF?", when an incoming LF is found, simply remember
+      it without altering the input buffer; this saves many Copy() calls.
+    * Add a test on detecting mixed line endings in output streams.
 
-[Changes for 0.09 - 2004-10-16]
+0.09     2004-10-16
 
-* Mixed line endings may now be detected by appending '!' or '?' symbols
-  to the line ending specifier, eg. ":eol(CRLF!)".
-* Unified read and write logic into OnceAndOnlyOnce macros.
+    * Mixed line endings may now be detected by appending '!' or '?' symbols
+      to the line ending specifier, eg. ":eol(CRLF!)".
+    * Unified read and write logic into OnceAndOnlyOnce macros.
 
-[Changes for 0.08 - 2004-10-15]
+0.08     2004-10-15
 
-* Macroize the inner write() loop too.
-* Further refactor common macros into eol.h.
-* LF and CR disciplines no longer need to allocate any additional memories
-  during fill().
-* Test failures are now displayed in hex code for easier debugging.
+    * Macroize the inner write() loop too.
+    * Further refactor common macros into eol.h.
+    * LF and CR disciplines no longer need to allocate any additional memories
+      during fill().
+    * Test failures are now displayed in hex code for easier debugging.
 
-[Changes for 0.07 - 2004-10-15]
+0.07     2004-10-15
 
-* Safely frees allocated buffer memory during reads.
-* Also safely frees the "eol_r" marker when the layer is pushed.
-* Correct "unknown eol_w" diagnostics message.
+    * Safely frees allocated buffer memory during reads.
+    * Also safely frees the "eol_r" marker when the layer is pushed.
+    * Correct "unknown eol_w" diagnostics message.
 
-[Changes for 0.06 - 2004-10-15]
+0.06     2004-10-15
 
-* Macroize the inner fill() loop into fill.h, which saves many cycles.
-* In particular, 'LF' and 'Native' on LF platforms should now only have
-  minimum overhead over ':raw' if the processed stream does not contain CRs.
+    * Macroize the inner fill() loop into fill.h, which saves many cycles.
+    * In particular, 'LF' and 'Native' on LF platforms should now only have
+      minimum overhead over ':raw' if the processed stream does not contain CRs.
 
-[Changes for 0.05 - 2004-10-09]
+0.05     2004-10-09
 
-* PerlIO_read() calls were returning unneeded errors when the
-  read block is only partially filled.  Fix this by taking
-  _read calls into our hands and save some bits of indirection.
+    * PerlIO_read() calls were returning unneeded errors when the
+      read block is only partially filled.  Fix this by taking
+      _read calls into our hands and save some bits of indirection.
 
-[Changes for 0.04 - 2004-10-09]
+0.04     2004-10-09
 
-* We now optionally exports CR, LF, CRLF and NATIVE constants,
-  at requests from Chia-Liang Kao.
-* eol_is_mixed is now prototyped as ($).
+    * We now optionally exports CR, LF, CRLF and NATIVE constants,
+      at requests from Chia-Liang Kao.
+    * eol_is_mixed is now prototyped as ($).
 
-[Changes for 0.03 - 2004-10-08]
+0.03     2004-10-08
 
-* Fix building problems on Win32.
-* Support the "Native" eol style.
-* Added I/O-specific syntax like "LF-Native", which means reading with LF
-  and writing to Native; this what "svn:eol-style = native" means.
-* Optionally exports a "eol_is_mixed" function, to determine whether a string
-  has an inconsistent line ending style.
+    * Fix building problems on Win32.
+    * Support the "Native" eol style.
+    * Added I/O-specific syntax like "LF-Native", which means reading with LF
+      and writing to Native; this what "svn:eol-style = native" means.
+    * Optionally exports a "eol_is_mixed" function, to determine whether a string
+      has an inconsistent line ending style.
 
-[Changes for 0.02 - 2004-10-07]
+0.02     2004-10-07
 
-* Fixed the buffer offset problem on non-CRLF settings.
-* Trailing data for read operations were ignored.  Oops.
+    * Fixed the buffer offset problem on non-CRLF settings.
+    * Trailing data for read operations were ignored.  Oops.
 
-[Changes for 0.01 - 2004-10-07]
+0.01     2004-10-07
 
-* Initial release to CPAN.
+    * Initial release to CPAN.
