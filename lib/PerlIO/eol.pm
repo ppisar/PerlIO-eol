@@ -58,6 +58,30 @@ in that string, or C<0> if the line endings are consistent.
 
 The C<CR>, C<LF>, C<CRLF> and C<NATIVE> constants are also exported at request.
 
+=head1 EXPORTS
+
+=head2 CR
+
+A carriage return constant.
+
+=head2 CRLF
+
+A carriage return/line feed constant.
+
+=head2 LF
+
+A line feed constant.
+
+=head2 NATIVE
+
+The native line ending.
+
+=head2 eol_is_mixed
+
+This module also optionally exports a C<eol_is_mixed> function; it takes a
+string and returns the position of the first inconsistent line ending found
+in that string, or C<0> if the line endings are consistent.
+
 =head1 AUTHORS
 
 Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
