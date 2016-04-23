@@ -14,7 +14,7 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
     STDCHAR *p, *eol_w = NULL, *eol_r = NULL;
     STRLEN len;
-    
+
     if (PerlIOBase(PerlIONext(f))->flags & PERLIO_F_UTF8) {
         PerlIOBase(f)->flags |= PERLIO_F_UTF8;
     }
@@ -81,7 +81,7 @@ void
 PerlIOEOL_clearerr(pTHX_ PerlIO *f)
 {
     PerlIOEOL *s;
-    
+
     if (PerlIOValid(f)) {
         s = PerlIOSelf(f, PerlIOEOL);
         if (PerlIOBase(f)->flags & PERLIO_F_EOF) {
@@ -102,7 +102,7 @@ PerlIOEOL_write(pTHX_ PerlIO *f, const void *vbuf, Size_t count)
     end += (unsigned int)count;
 
     EOL_StartUpdate( s->write );
-    
+
     if (!(PerlIOBase(f)->flags & PERLIO_F_CANWRITE)) { return 0; }
 
     EOL_Dispatch( s->write, WriteWithCR, WriteWithLF, WriteWithCRLF );
@@ -164,7 +164,7 @@ PerlIO_funcs PerlIO_eol = {
     sizeof(PerlIO_funcs),
     "eol",
     sizeof(PerlIOEOL),
-    PERLIO_K_BUFFERED | PERLIO_K_UTF8, 
+    PERLIO_K_BUFFERED | PERLIO_K_UTF8,
     PerlIOEOL_pushed,
     PerlIOBuf_popped,
     PerlIOEOL_open,
@@ -193,7 +193,7 @@ PerlIO_funcs PerlIO_eol = {
 
 MODULE = PerlIO::eol            PACKAGE = PerlIO::eol
 
-BOOT:  
+BOOT:
   #ifdef PERLIO_LAYERS
         PerlIO_define_layer(aTHX_ &PerlIO_eol);
   #endif

@@ -20,7 +20,7 @@ PerlIO::eol - PerlIO layer for normalizing line endings
 
 =head1 VERSION
 
-This document describes version 0.14 of PerlIO::eol, released 
+This document describes version 0.14 of PerlIO::eol, released
 December 18, 2006.
 
 =head1 SYNOPSIS
@@ -70,7 +70,7 @@ Inspired by L<PerlIO::nline> by Ben Morrow, E<lt>PerlIO-eol@morrow.me.ukE<gt>.
 
 Copyright 2004-2006 by Audrey Tang E<lt>audreyt@audreyt.orgE<gt>.
 
-This program is free software; you can redistribute it and/or 
+This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 See L<http://www.perl.com/perl/misc/Artistic.html>
