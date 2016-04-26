@@ -1,6 +1,10 @@
 package PerlIO::eol;
 
 use 5.007003;
+
+use strict;
+use warnings;
+
 use XSLoader;
 use Exporter;
 
