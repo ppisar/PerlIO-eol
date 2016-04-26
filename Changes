@@ -1,3 +1,11 @@
+0.15     2016-04-26
+
+    * Convert the distribution from Module-Install which has become
+      undermaintained to Dist-Zilla.
+    * Some implied enhancements such as pod coverage, VCS repository
+      information and meta-data, removal of trailing whitespace, a LICENSE
+      file, etc.
+
 0.14     2006-12-15
 
     * Doc fixes.
