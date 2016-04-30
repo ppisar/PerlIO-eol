@@ -1,3 +1,10 @@
+0.16     2016-04-30
+
+    * Hopefully get rid of some warnings on Solaris and other platforms with
+      STDCHAR not "char".
+        - https://rt.cpan.org/Public/Bug/Display.html?id=28104
+        - Thanks to SMPETERS, SREZIC, GAAL, and others.
+
 0.15     2016-04-26
 
     * Convert the distribution from Module-Install which has become

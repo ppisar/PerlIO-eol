@@ -12,7 +12,7 @@ IV
 PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
 {
     PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
-    STDCHAR *p, *eol_w = NULL, *eol_r = NULL;
+    char *p, *eol_w = NULL, *eol_r = NULL;
     STRLEN len;
 
     if (PerlIOBase(PerlIONext(f))->flags & PERLIO_F_UTF8) {
@@ -28,7 +28,7 @@ PerlIOEOL_pushed(pTHX_ PerlIO *f, const char *mode, SV *arg, PerlIO_funcs *tab)
 
     p = SvPV(arg, len);
     if (len) {
-        STDCHAR *end = p + len;
+        char *end = p + len;
         Newz('e', eol_r, len + 1, char);
         Copy(p, eol_r, len, char);
 
@@ -154,7 +154,7 @@ PerlIOEOL_open(pTHX_ PerlIO_funcs *self, PerlIO_list_t *layers,
 
     if (f) {
         PerlIOEOL *s = PerlIOSelf(f, PerlIOEOL);
-        s->name = savepv( SvPV_nolen(arg) );
+        s->name = (STDCHAR *)savepv( SvPV_nolen(arg) );
     }
 
     return f;
