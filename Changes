@@ -1,3 +1,7 @@
+0.17        Unknown
+
+    * Fix the link to the GitHub repository in the metadata.
+
 0.16        2016-04-30
 
     * Hopefully get rid of some warnings on Solaris and other platforms with
